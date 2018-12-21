@@ -109,7 +109,7 @@ class MenuApp internal constructor(title: String) {
             val newItem = MenuItem(item.title)
             newItem.addActionListener(object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent) {
-                    if (item.action != null) item.action!!.act()
+                    item.action()
                 }
             })
             menu.add(newItem)
@@ -132,10 +132,6 @@ class MenuApp internal constructor(title: String) {
         this.items = items
     }
 
-    interface Action {
-        fun act()
-    }
-
     public class Builder {
 
         private val items = LinkedList<Item>()
@@ -151,7 +147,7 @@ class MenuApp internal constructor(title: String) {
             return this
         }
 
-        fun addItem(item: String, action: Action): Builder {
+        fun addItem(item: String, action: () -> Unit = {}): Builder {
             items.add(Item(item, action))
             return this
         }
@@ -164,7 +160,7 @@ class MenuApp internal constructor(title: String) {
 
     }
 
-    class Item(internal var title: String, internal var action: Action?) {
+    class Item(internal var title: String, internal var action: () -> Unit = {}) {
 
         internal var subItems: MutableList<Item> = LinkedList()
 
