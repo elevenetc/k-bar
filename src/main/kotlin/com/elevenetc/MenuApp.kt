@@ -24,18 +24,12 @@ import javax.swing.AbstractAction
  * });
  * }
  */
-class MenuApp internal constructor(title: String) {
+class MenuApp internal constructor(val title: String) {
 
     private var trayIcon: TrayIcon? = null
-    private val title: String
     private var items: List<Item>? = null
 
-    init {
-
-        this.title = Objects.requireNonNull(title)
-    }
-
-    fun textToImage(Text: String, f: Font, Size: Float): BufferedImage {
+    private fun textToImage(Text: String, f: Font, Size: Float): BufferedImage {
         var f = f
         f = f.deriveFont(Size)
 
@@ -58,50 +52,46 @@ class MenuApp internal constructor(title: String) {
         return img
     }
 
-    fun show() {
-        try {
-            java.awt.Toolkit.getDefaultToolkit()
+    fun show(): SystemTray {
+        java.awt.Toolkit.getDefaultToolkit()
 
-            if (!java.awt.SystemTray.isSupported()) {
-                println("No system tray support, application exiting.")
-                Platform.exit()
-            }
-
-            val tray = java.awt.SystemTray.getSystemTray()
-
-            trayIcon = TrayIcon(iconImage(title))
-
-            val openItem = java.awt.MenuItem("hello, world")
-            val defaultFont = java.awt.Font.decode(null)
-            val boldFont = defaultFont.deriveFont(java.awt.Font.BOLD)
-            openItem.font = boldFont
-
-            val exitItem = java.awt.MenuItem("Exit")
-            exitItem.addActionListener { event ->
-                Platform.exit()
-                tray.remove(trayIcon)
-            }
-
-            openItem.addActionListener { event ->
-
-            }
-
-            // setup the rootMenu for the application.
-            val rootMenu = java.awt.PopupMenu()
-
-            for (item in items!!) {
-                addItem(rootMenu, item)
-            }
-
-            trayIcon!!.popupMenu = rootMenu
-            trayIcon!!.isImageAutoSize = true
-
-            tray.add(trayIcon!!)
-        } catch (e: Throwable) {
-            println("Unable to init system tray")
-            e.printStackTrace()
+        if (!java.awt.SystemTray.isSupported()) {
+            println("No system tray support, application exiting.")
+            Platform.exit()
         }
 
+        val tray = java.awt.SystemTray.getSystemTray()
+
+        trayIcon = TrayIcon(iconImage(title))
+
+        val openItem = java.awt.MenuItem("hello, world")
+        val defaultFont = java.awt.Font.decode(null)
+        val boldFont = defaultFont.deriveFont(java.awt.Font.BOLD)
+        openItem.font = boldFont
+
+        val exitItem = java.awt.MenuItem("Exit")
+        exitItem.addActionListener { event ->
+            Platform.exit()
+            tray.remove(trayIcon)
+        }
+
+        openItem.addActionListener { event ->
+
+        }
+
+        // setup the rootMenu for the application.
+        val rootMenu = java.awt.PopupMenu()
+
+        for (item in items!!) {
+            addItem(rootMenu, item)
+        }
+
+        trayIcon!!.popupMenu = rootMenu
+        trayIcon!!.isImageAutoSize = true
+
+        tray.add(trayIcon!!)
+
+        return tray
     }
 
     private fun addItem(menu: PopupMenu, item: Item) {
@@ -147,7 +137,8 @@ class MenuApp internal constructor(title: String) {
             return this
         }
 
-        fun addItem(item: String, action: () -> Unit = {}): Builder {
+        fun addItem(
+            item: String, action: ()//> bn  0 -> Unit = {}): Builder {
             items.add(Item(item, action))
             return this
         }
