@@ -25,9 +25,11 @@ class AdbMenu {
     }
 
     private fun addAVDs(): MenuApp.Item {
+        val sub = MenuApp.Item("AVDs")
+
+
         val devices = execute(Command("emulator", "-list-avds"))
 
-        val sub = MenuApp.Item("AVDs")
 
         devices.forEach {
             val avdName = it

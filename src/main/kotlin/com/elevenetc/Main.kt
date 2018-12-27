@@ -6,6 +6,7 @@ fun main(args: Array<String>) {
     System.setProperty("apple.awt.UIElement", "true")
 
     SwingUtilities.invokeLater {
-        AdbMenu()
+        //AdbMenu()
+        RefreshMenu()
     }
 }

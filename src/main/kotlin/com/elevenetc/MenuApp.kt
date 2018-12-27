@@ -94,20 +94,22 @@ class MenuApp internal constructor(val title: String) {
         return tray
     }
 
-    private fun addItem(menu: PopupMenu, item: Item) {
-        if (item.subItems.isEmpty()) {
-            val newItem = MenuItem(item.title)
+    private fun addItem(menu: PopupMenu, model: Item) {
+        if (model.subItems.isEmpty()) {
+            val newItem = MenuItem(model.title)
             newItem.addActionListener(object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent) {
-                    item.action()
+                    model.action()
                 }
             })
             menu.add(newItem)
+            model.onAttachedTo(this, menu, newItem)
         } else {
-            val subMenu = PopupMenu(item.title)
+            val subMenu = PopupMenu(model.title)
             menu.add(subMenu)
+            model.onAttachedTo(this, menu, subMenu)
 
-            for (subItem in item.subItems) {
+            for (subItem in model.subItems) {
                 addItem(subMenu, subItem)
             }
         }
@@ -137,9 +139,19 @@ class MenuApp internal constructor(val title: String) {
             return this
         }
 
-        fun addItem(
-            item: String, action: ()//> bn  0 -> Unit = {}): Builder {
+        fun addItem(item: String, action: () -> Unit = {}): Builder {
             items.add(Item(item, action))
+            return this
+        }
+
+        fun addItem(
+            model: Item,
+            refresh: (app: MenuApp, container: PopupMenu, added: MenuItem) -> Unit,
+            refreshTime: Long = -1
+        ): Builder {
+            model.refreshTime = refreshTime
+            model.refresh = refresh
+            items.add(model)
             return this
         }
 
@@ -154,10 +166,23 @@ class MenuApp internal constructor(val title: String) {
     class Item(internal var title: String, internal var action: () -> Unit = {}) {
 
         internal var subItems: MutableList<Item> = LinkedList()
+        internal var refreshTime: Long = -1
+        lateinit var refresh: (app: MenuApp, container: PopupMenu, added: MenuItem) -> Unit
 
         fun addSub(item: Item): Item {
             subItems.add(item)
             return this
+        }
+
+        internal fun onAttachedTo(app: MenuApp, container: PopupMenu, added: MenuItem) {
+            if (refreshTime > 0) {
+                Thread {
+                    while (true) {
+                        Thread.sleep(refreshTime)
+                        refresh(app, container, added)
+                    }
+                }.start()
+            }
         }
     }
 
